@@ -9,4 +9,5 @@ import org.mapstruct.Mapping;
 public interface ArticuloCarritoEntityMapper {
     @Mapping(source = "carritoId", target = "carrito.carritoID")
     ArticuloCarritoEntity toEntity(ArticuloCarrito articuloCarrito);
+    ArticuloCarrito toDomain(ArticuloCarritoEntity articuloCarritoEntity);
 }

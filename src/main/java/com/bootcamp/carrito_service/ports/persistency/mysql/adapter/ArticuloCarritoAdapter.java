@@ -9,6 +9,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class ArticuloCarritoAdapter implements IArticuloCarritoPersistencePort {
@@ -21,5 +23,20 @@ public class ArticuloCarritoAdapter implements IArticuloCarritoPersistencePort {
     public void agregarArticuloACarrito(ArticuloCarrito articuloCarrito) {
         ArticuloCarritoEntity entity = articuloCarritoEntityMapper.toEntity(articuloCarrito);
         articuloCarritoRepository.save(entity);
+    }
+
+    @Override
+    @Transactional
+    public List<ArticuloCarrito> obtenerArticulosPorCarrito(Long carritoId) {
+        List<ArticuloCarritoEntity> articuloCarritoEntities = articuloCarritoRepository.findByCarritoId(carritoId);
+        return articuloCarritoEntities.stream()
+                .map(articuloCarritoEntityMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public ArticuloCarrito obtenerArticuloEnCarrito(Long carritoID, Long articuloID) {
+        ArticuloCarritoEntity entity = articuloCarritoRepository.findByCarritoIdAndArticuloId(carritoID, articuloID);
+        return entity != null ? articuloCarritoEntityMapper.toDomain(entity) : null;
     }
 }
