@@ -5,11 +5,9 @@ import com.bootcamp.carrito_service.domain.exception.MaximoArticulosPorCategoria
 import com.bootcamp.carrito_service.domain.exception.StockInsuficienteException;
 import com.bootcamp.carrito_service.domain.model.ArticuloCarrito;
 import com.bootcamp.carrito_service.domain.model.Carrito;
-import com.bootcamp.carrito_service.domain.spi.IArticuloCarritoPersistencePort;
-import com.bootcamp.carrito_service.domain.spi.IArticuloPersistencePort;
-import com.bootcamp.carrito_service.domain.spi.ICarritoPersistencePort;
-import com.bootcamp.carrito_service.domain.spi.IUsuarioPersistencePort;
+import com.bootcamp.carrito_service.domain.spi.*;
 import com.bootcamp.carrito_service.domain.utils.ArticuloInfo;
+import com.bootcamp.carrito_service.domain.utils.CarritoConstants;
 
 import java.util.Map;
 import java.util.Set;
@@ -22,12 +20,14 @@ public class CarritoUseCase implements ICarritoServicePort {
     private final ICarritoPersistencePort carritoPersistencePort;
     private final IUsuarioPersistencePort usuarioPersistencePort;
     private final IArticuloCarritoPersistencePort articuloCarritoPersistencePort;
+    private final ISuministroPersistencePort suministroPersistencePort;
 
-    public CarritoUseCase(IArticuloPersistencePort articuloPersistencePort, ICarritoPersistencePort carritoPersistencePort, IUsuarioPersistencePort usuarioPersistencePort, IArticuloCarritoPersistencePort articuloCarritoPersistencePort) {
+    public CarritoUseCase(IArticuloPersistencePort articuloPersistencePort, ICarritoPersistencePort carritoPersistencePort, IUsuarioPersistencePort usuarioPersistencePort, IArticuloCarritoPersistencePort articuloCarritoPersistencePort, ISuministroPersistencePort suministroPersistencePort) {
         this.articuloPersistencePort = articuloPersistencePort;
         this.carritoPersistencePort = carritoPersistencePort;
         this.usuarioPersistencePort = usuarioPersistencePort;
         this.articuloCarritoPersistencePort = articuloCarritoPersistencePort;
+        this.suministroPersistencePort = suministroPersistencePort;
     }
 
     @Override
@@ -35,45 +35,59 @@ public class CarritoUseCase implements ICarritoServicePort {
         Long usuarioID = usuarioPersistencePort.obtenerUsuarioID();
         Carrito carrito = carritoPersistencePort.obtenerOCrearCarrito(usuarioID);
 
-        ArticuloInfo articuloInfo = articuloPersistencePort.verificarInfoArticulo(articuloID);
-        if (articuloInfo.getCantidad() <= cantidad) {
-            throw new StockInsuficienteException("No hay suficiente stock para este artículo.");
-        }
-
+        ArticuloInfo articuloInfo = verificarStockDisponible(articuloID, cantidad);
         ArticuloCarrito articuloExistente = articuloCarritoPersistencePort.obtenerArticuloEnCarrito(carrito.getCarritoID(), articuloID);
 
         if (articuloExistente != null) {
-            if (articuloInfo.getCantidad() <= cantidad) {
-                throw new StockInsuficienteException("No hay suficiente stock para la cantidad solicitada.");
-            }
-            articuloExistente.setCantidad(cantidad);
-            articuloCarritoPersistencePort.agregarArticuloACarrito(articuloExistente);
-        }
-        else {
-            Set<Long> categoriasNuevas = new HashSet<>(articuloInfo.getCategorias());
-
-            Map<Long, Set<Long>> articuloCategoriasEnCarrito = obtenerCategoriasDeArticulosEnCarrito(carrito);
-
-            validarMaximoArticulosPorCategoria(categoriasNuevas, articuloCategoriasEnCarrito);
-
-            ArticuloCarrito articuloCarrito = new ArticuloCarrito(carrito.getCarritoID(), articuloID, cantidad);
-            articuloCarritoPersistencePort.agregarArticuloACarrito(articuloCarrito);
+            actualizarArticuloExistente(articuloExistente, cantidad, articuloInfo);
+        } else {
+            agregarNuevoArticulo(carrito, articuloID, cantidad, articuloInfo);
         }
 
         carritoPersistencePort.actualizarCarrito(carrito);
     }
 
+    private ArticuloInfo verificarStockDisponible(Long articuloID, Long cantidad) {
+        ArticuloInfo articuloInfo = articuloPersistencePort.verificarInfoArticulo(articuloID);
+        String fechaAbastecimiento = suministroPersistencePort.getFechaAbastecimiento();
+
+        if (articuloInfo.getCantidad() <= cantidad) {
+            throw new StockInsuficienteException(fechaAbastecimiento);
+        }
+        return articuloInfo;
+    }
+
+
+    private void actualizarArticuloExistente(ArticuloCarrito articuloExistente, Long cantidad, ArticuloInfo articuloInfo) {
+        String fechaAbastecimiento = suministroPersistencePort.getFechaAbastecimiento();
+        if (articuloInfo.getCantidad() <= cantidad) {
+            throw new StockInsuficienteException(fechaAbastecimiento);
+        }
+        articuloExistente.setCantidad(cantidad);
+        articuloCarritoPersistencePort.agregarArticuloACarrito(articuloExistente);
+    }
+
+    private void agregarNuevoArticulo(Carrito carrito, Long articuloID, Long cantidad, ArticuloInfo articuloInfo) {
+        Set<Long> categoriasNuevas = new HashSet<>(articuloInfo.getCategorias());
+        Map<Long, Set<Long>> articuloCategoriasEnCarrito = obtenerCategoriasDeArticulosEnCarrito(carrito);
+
+        validarMaximoArticulosPorCategoria(categoriasNuevas, articuloCategoriasEnCarrito);
+
+        ArticuloCarrito articuloCarrito = new ArticuloCarrito(carrito.getCarritoID(), articuloID, cantidad);
+        articuloCarritoPersistencePort.agregarArticuloACarrito(articuloCarrito);
+    }
 
     private void validarMaximoArticulosPorCategoria(Set<Long> categoriasNuevas, Map<Long, Set<Long>> articuloCategoriasEnCarrito) {
         Map<Long, Long> categoriaContador = obtenerContadorPorCategoria(articuloCategoriasEnCarrito);
 
         for (Long categoriaNueva : categoriasNuevas) {
-            Long count = categoriaContador.getOrDefault(categoriaNueva, 0L);
-            if (count >= 3) {
-                throw new MaximoArticulosPorCategoriaException("Ya tienes 3 artículos de la categoría: " + categoriaNueva);
+            Long count = categoriaContador.getOrDefault(categoriaNueva, CarritoConstants.INICIAL_CATEGORIA_CONTADOR);
+            if (count >= CarritoConstants.MAXIMO_ARTICULOS_POR_CATEGORIA) {
+                throw new MaximoArticulosPorCategoriaException();
             }
         }
     }
+
     private Map<Long, Set<Long>> obtenerCategoriasDeArticulosEnCarrito(Carrito carrito) {
         List<ArticuloCarrito> articulosCarrito = articuloCarritoPersistencePort.obtenerArticulosPorCarrito(carrito.getCarritoID());
 
@@ -91,7 +105,8 @@ public class CarritoUseCase implements ICarritoServicePort {
         for (Map.Entry<Long, Set<Long>> entry : articuloCategorias.entrySet()) {
             Set<Long> categoriasArticulo = entry.getValue();
             for (Long categoriaID : categoriasArticulo) {
-                contadorCategorias.put(categoriaID, contadorCategorias.getOrDefault(categoriaID, 0L) + 1);
+                contadorCategorias.put(categoriaID, contadorCategorias.getOrDefault(categoriaID, CarritoConstants.INICIAL_CATEGORIA_CONTADOR)
+                        + CarritoConstants.INCREMENTO_CATEGORIA_CONTADOR);
             }
         }
 

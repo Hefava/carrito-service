@@ -9,6 +9,8 @@ public class SecurityConstants {
 
     public static final String AUTHORIZATION = "Authorization";
 
+    public static final String BEARER = "Bearer ";
+
     private SecurityConstants() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }

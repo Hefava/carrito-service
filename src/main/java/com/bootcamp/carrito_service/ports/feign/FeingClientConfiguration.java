@@ -1,7 +1,9 @@
 package com.bootcamp.carrito_service.ports.feign;
 
 import com.bootcamp.carrito_service.domain.utils.TokenHolder;
+import com.bootcamp.carrito_service.infrastructure.exceptionhandler.FeignErrorDecoder;
 import feign.RequestInterceptor;
+import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,6 +20,10 @@ public class FeingClientConfiguration {
                 requestTemplate.header(AUTHORIZATION, token);
             }
         };
+    }
+    @Bean
+    public ErrorDecoder errorDecoder() {
+        return new FeignErrorDecoder();
     }
 }
 

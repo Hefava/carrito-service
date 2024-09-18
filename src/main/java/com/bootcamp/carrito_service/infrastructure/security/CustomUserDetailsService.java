@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
+import static com.bootcamp.carrito_service.domain.utils.CarritoConstants.ROLE_PREFIX;
+import static com.bootcamp.carrito_service.domain.utils.ErrorConstants.TOKEN_INVALIDO;
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -24,13 +27,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         UsuarioResponse usuarioResponse = usuarioClient.validateToken(token);
 
         if (usuarioResponse == null || usuarioResponse.getUsername() == null) {
-            throw new UsernameNotFoundException("Token inválido o usuario no encontrado");
+            throw new UsernameNotFoundException(TOKEN_INVALIDO);
         }
 
         return new org.springframework.security.core.userdetails.User(
                 usuarioResponse.getUsername(),
                 "",
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + usuarioResponse.getRole()))
+                Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + usuarioResponse.getRole()))
         );
     }
 }

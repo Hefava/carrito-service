@@ -2,10 +2,7 @@ package com.bootcamp.carrito_service.infrastructure.configuration;
 
 import com.bootcamp.carrito_service.domain.api.ICarritoServicePort;
 import com.bootcamp.carrito_service.domain.api.usecase.CarritoUseCase;
-import com.bootcamp.carrito_service.domain.spi.IArticuloCarritoPersistencePort;
-import com.bootcamp.carrito_service.domain.spi.IArticuloPersistencePort;
-import com.bootcamp.carrito_service.domain.spi.ICarritoPersistencePort;
-import com.bootcamp.carrito_service.domain.spi.IUsuarioPersistencePort;
+import com.bootcamp.carrito_service.domain.spi.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,10 +17,11 @@ public class BeanConfiguration {
     private final ICarritoPersistencePort carritoPersistencePort;
     private final IUsuarioPersistencePort usuarioPersistencePort;
     private final IArticuloCarritoPersistencePort articuloCarritoPersistencePort;
+    private final ISuministroPersistencePort suministroPersistencePort;
 
     @Bean
     public ICarritoServicePort suministroServicePort() {
-        return new CarritoUseCase(articuloPersistencePort, carritoPersistencePort, usuarioPersistencePort, articuloCarritoPersistencePort);
+        return new CarritoUseCase(articuloPersistencePort, carritoPersistencePort, usuarioPersistencePort, articuloCarritoPersistencePort, suministroPersistencePort);
     }
 
     @Bean

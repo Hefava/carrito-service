@@ -1,7 +1,14 @@
 package com.bootcamp.carrito_service.domain.exception;
 
 public class StockInsuficienteException extends RuntimeException {
-    public StockInsuficienteException(String message) {
-        super(message);
+    private final String fechaAbastecimiento;
+
+    public StockInsuficienteException(String fechaAbastecimiento) {
+        super();
+        this.fechaAbastecimiento = fechaAbastecimiento;
+    }
+
+    public String getFechaAbastecimiento() {
+        return fechaAbastecimiento;
     }
 }
