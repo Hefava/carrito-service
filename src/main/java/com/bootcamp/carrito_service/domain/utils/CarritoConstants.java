@@ -11,5 +11,7 @@ public class CarritoConstants {
     public static final int MAXIMO_ARTICULOS_POR_CATEGORIA = 3;
     public static final long MIN_CANTIDAD = 1L;
     public static final String ROLE_PREFIX = "ROLE_";
-    public static final String CLAVE_VACIA = "";
+    public static final String ELIMINAR_ARTICULO_QUERY = "DELETE FROM articulos_carrito WHERE carrito_id = :carritoID AND articulo_id = :articuloID";
+    public static final String PARAM_CARRITO = "carritoID";
+    public static final String PARAM_ARTICULO = "articuloID";
 }

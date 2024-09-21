@@ -2,7 +2,8 @@ package com.bootcamp.carrito_service.ports.application.http.controller;
 
 import com.bootcamp.carrito_service.domain.api.ICarritoServicePort;
 import com.bootcamp.carrito_service.domain.utils.TokenHolder;
-import com.bootcamp.carrito_service.ports.application.http.dto.CarritoRequest;
+import com.bootcamp.carrito_service.ports.application.http.dto.AgregarArticuloACarritoRequest;
+import com.bootcamp.carrito_service.ports.application.http.dto.EliminarArticuloCarritoRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,12 +29,25 @@ public class CarritoRestController {
     })
     @PostMapping("/agregar-articulos")
     public ResponseEntity<Void> agregarArticulos(
-            @RequestHeader("Authorization") @Parameter(description = "Token de autorización JWT", required = true) String token,
-            @RequestBody @Valid @Parameter(description = "Detalles del carrito, incluyendo el ID del artículo y la cantidad.", required = true) CarritoRequest carritoRequest) {
+            @RequestHeader("Authorization") @Parameter(required = true) String token,
+            @RequestBody @Valid @Parameter(required = true) AgregarArticuloACarritoRequest carritoRequest) {
 
         TokenHolder.setToken(token);
         carritoService.agregarArticulo(carritoRequest.getArticuloID(), carritoRequest.getCantidad());
         TokenHolder.clear();
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Operation(summary = "Eliminar artículos del carrito", description = "Permite eliminar artículos del carrito especificado en la solicitud.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Artículos eliminados exitosamente del carrito."),
+            @ApiResponse(responseCode = "400", description = "Solicitud incorrecta. Los datos del carrito pueden ser inválidos o incompletos."),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor. Se produjo un problema al procesar la solicitud.")
+    })
+    @DeleteMapping("/eliminar-articulo-de-carrito")
+    public ResponseEntity<Void> eliminarArticuloDeCarrito(
+            @RequestBody @Valid @Parameter(description = "Identificadores del carrito y del artículo a eliminar.", required = true) EliminarArticuloCarritoRequest eliminarArticuloCarritoRequest) {
+        carritoService.eliminarArticulo(eliminarArticuloCarritoRequest.getCarritoID(), eliminarArticuloCarritoRequest.getArticuloID());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }

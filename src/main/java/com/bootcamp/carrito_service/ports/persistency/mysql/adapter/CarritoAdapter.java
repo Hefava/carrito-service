@@ -4,7 +4,6 @@ import com.bootcamp.carrito_service.domain.model.Carrito;
 import com.bootcamp.carrito_service.domain.spi.ICarritoPersistencePort;
 import com.bootcamp.carrito_service.ports.persistency.mysql.mapper.CarritoEntityMapper;
 import com.bootcamp.carrito_service.ports.persistency.mysql.repository.ICarritoRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,12 +28,5 @@ public class CarritoAdapter implements ICarritoPersistencePort {
                             carritoRepository.save(carritoEntityMapper.toEntity(carrito))
                     );
                 });
-    }
-
-    @Override
-    @Transactional
-    public void actualizarCarrito(Carrito carrito) {
-        carrito.setFechaActualizacion(LocalDateTime.now());
-        carritoRepository.save(carritoEntityMapper.toEntity(carrito));
     }
 }

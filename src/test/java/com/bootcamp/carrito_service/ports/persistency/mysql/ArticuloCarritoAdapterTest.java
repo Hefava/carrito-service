@@ -47,6 +47,19 @@ class ArticuloCarritoAdapterTest {
     }
 
     @Test
+    void testEliminarArticuloDeCarrito() {
+        // Arrange
+        Long carritoID = 1L;
+        Long articuloID = 1L;
+
+        // Act
+        articuloCarritoAdapter.eliminarArticuloDeCarrito(carritoID, articuloID);
+
+        // Assert
+        verify(articuloCarritoRepository).eliminarArticuloDeCarrito(carritoID, articuloID);
+    }
+
+    @Test
     void testObtenerArticulosPorCarrito() {
         // Arrange
         Long carritoId = 1L;

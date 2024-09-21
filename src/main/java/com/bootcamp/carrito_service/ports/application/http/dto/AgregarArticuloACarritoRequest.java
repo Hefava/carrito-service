@@ -14,7 +14,7 @@ import static com.bootcamp.carrito_service.domain.utils.ErrorConstants.ERROR_CAN
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CarritoRequest {
+public class AgregarArticuloACarritoRequest {
     @NotNull
     private Long articuloID;
 
