@@ -27,6 +27,12 @@ public class ArticuloCarritoAdapter implements IArticuloCarritoPersistencePort {
 
     @Override
     @Transactional
+    public void eliminarArticuloDeCarrito(Long carritoID, Long articuloID) {
+        articuloCarritoRepository.eliminarArticuloDeCarrito(carritoID, articuloID);
+    }
+
+    @Override
+    @Transactional
     public List<ArticuloCarrito> obtenerArticulosPorCarrito(Long carritoId) {
         List<ArticuloCarritoEntity> articuloCarritoEntities = articuloCarritoRepository.findByCarritoId(carritoId);
         return articuloCarritoEntities.stream()

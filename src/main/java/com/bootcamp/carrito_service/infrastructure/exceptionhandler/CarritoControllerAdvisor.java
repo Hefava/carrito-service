@@ -1,5 +1,6 @@
 package com.bootcamp.carrito_service.infrastructure.exceptionhandler;
 
+import com.bootcamp.carrito_service.domain.exception.ArticuloNoEncontradoException;
 import com.bootcamp.carrito_service.domain.exception.MaximoArticulosPorCategoriaException;
 import com.bootcamp.carrito_service.domain.exception.StockInsuficienteException;
 import feign.RetryableException;
@@ -16,11 +17,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.bootcamp.carrito_service.domain.utils.ErrorConstants.MESSAGE;
 import static com.bootcamp.carrito_service.domain.utils.ErrorConstants.SERVER_ERROR;
 
 @ControllerAdvice
 public class CarritoControllerAdvisor {
-    private static final String MESSAGE = "Message";
 
     @ExceptionHandler(StockInsuficienteException.class)
     public ResponseEntity<Map<String, String>> handleStockInsuficienteException(StockInsuficienteException ex) {
@@ -38,7 +39,14 @@ public class CarritoControllerAdvisor {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        String mensaje = CarritoExceptionResponse.ARTICULO_NO_ENCONTRADO.getMessage();
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Collections.singletonMap(MESSAGE, mensaje));
+    }
+
+    @ExceptionHandler(ArticuloNoEncontradoException.class)
+    public ResponseEntity<Map<String, String>> handleArticuloNoEncontradoException(ArticuloNoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Collections.singletonMap(MESSAGE, ex.getMessage()));
     }
 

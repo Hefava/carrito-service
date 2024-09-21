@@ -8,6 +8,7 @@ import com.bootcamp.carrito_service.domain.spi.*;
 import com.bootcamp.carrito_service.domain.utils.ArticuloInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -65,7 +66,29 @@ class CarritoUseCaseTest {
 
         // Assert
         verify(articuloCarritoPersistencePort).agregarArticuloACarrito(any(ArticuloCarrito.class));
-        verify(carritoPersistencePort).actualizarCarrito(carrito);
+    }
+
+    @Test
+    void testEliminarArticulo_Success() {
+        // Arrange
+        Long articuloID = 1L;
+        Long usuarioID = 100L;
+        Long carritoID = 200L;
+
+        Carrito carrito = new Carrito();
+        carrito.setCarritoID(carritoID);
+
+        ArticuloCarrito articuloCarrito = new ArticuloCarrito(carritoID, articuloID, 3L);
+
+        when(usuarioPersistencePort.obtenerUsuarioID()).thenReturn(usuarioID);
+        when(carritoPersistencePort.obtenerOCrearCarrito(usuarioID)).thenReturn(carrito);
+        when(articuloCarritoPersistencePort.obtenerArticuloEnCarrito(carritoID, articuloID)).thenReturn(articuloCarrito);
+
+        // Act
+        carritoUseCase.eliminarArticulo(carritoID, articuloID);
+
+        // Assert
+        verify(articuloCarritoPersistencePort).eliminarArticuloDeCarrito(carritoID, articuloID);
     }
 
     @Test
@@ -139,6 +162,12 @@ class CarritoUseCaseTest {
         carritoUseCase.agregarArticulo(articuloID, cantidad);
 
         // Assert
-        verify(carritoPersistencePort).actualizarCarrito(carrito);
+        // Verificamos que se agregó el artículo al carrito
+        verify(articuloCarritoPersistencePort).agregarArticuloACarrito(any(ArticuloCarrito.class));
+        // También podemos verificar que el artículo fue agregado con la cantidad correcta
+        ArgumentCaptor<ArticuloCarrito> captor = ArgumentCaptor.forClass(ArticuloCarrito.class);
+        verify(articuloCarritoPersistencePort).agregarArticuloACarrito(captor.capture());
+        assertEquals(articuloID, captor.getValue().getArticuloId());
+        assertEquals(cantidad, captor.getValue().getCantidad());
     }
 }

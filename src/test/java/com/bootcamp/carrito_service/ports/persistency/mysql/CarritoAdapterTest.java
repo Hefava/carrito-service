@@ -11,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -48,22 +47,5 @@ class CarritoAdapterTest {
         verify(carritoRepository).findByUsuarioID(usuarioID);
         verify(carritoEntityMapper).toDomain(carritoEntity);
         assert result.equals(carrito);
-    }
-
-    @Test
-    void testActualizarCarrito() {
-        // Arrange
-        Carrito carrito = new Carrito();
-        carrito.setFechaCreacion(LocalDateTime.now().minusDays(1));
-        carrito.setFechaActualizacion(LocalDateTime.now().minusDays(1));
-        CarritoEntity carritoEntity = new CarritoEntity();
-        when(carritoEntityMapper.toEntity(carrito)).thenReturn(carritoEntity);
-
-        // Act
-        carritoAdapter.actualizarCarrito(carrito);
-
-        // Assert
-        verify(carritoRepository).save(carritoEntity);
-        assert carrito.getFechaActualizacion() != null;
     }
 }

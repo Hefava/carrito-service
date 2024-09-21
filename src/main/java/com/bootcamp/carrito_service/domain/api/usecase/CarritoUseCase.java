@@ -1,6 +1,7 @@
 package com.bootcamp.carrito_service.domain.api.usecase;
 
 import com.bootcamp.carrito_service.domain.api.ICarritoServicePort;
+import com.bootcamp.carrito_service.domain.exception.ArticuloNoEncontradoException;
 import com.bootcamp.carrito_service.domain.exception.MaximoArticulosPorCategoriaException;
 import com.bootcamp.carrito_service.domain.exception.StockInsuficienteException;
 import com.bootcamp.carrito_service.domain.model.ArticuloCarrito;
@@ -9,6 +10,7 @@ import com.bootcamp.carrito_service.domain.spi.*;
 import com.bootcamp.carrito_service.domain.utils.ArticuloInfo;
 import com.bootcamp.carrito_service.domain.utils.CarritoConstants;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
@@ -44,7 +46,20 @@ public class CarritoUseCase implements ICarritoServicePort {
             agregarNuevoArticulo(carrito, articuloID, cantidad, articuloInfo);
         }
 
-        carritoPersistencePort.actualizarCarrito(carrito);
+        carrito.setFechaActualizacion(LocalDateTime.now());
+    }
+
+    @Override
+    public void eliminarArticulo(Long carritoID, Long articuloID) {
+        Long usuarioID = usuarioPersistencePort.obtenerUsuarioID();
+        Carrito carrito = carritoPersistencePort.obtenerOCrearCarrito(usuarioID);
+        ArticuloCarrito articuloCarrito = articuloCarritoPersistencePort.obtenerArticuloEnCarrito(carritoID, articuloID);
+        if (articuloCarrito != null) {
+            articuloCarritoPersistencePort.eliminarArticuloDeCarrito(carritoID, articuloID);
+            carrito.setFechaActualizacion(LocalDateTime.now());
+        } else {
+            throw new ArticuloNoEncontradoException();
+        }
     }
 
     private ArticuloInfo verificarStockDisponible(Long articuloID, Long cantidad) {

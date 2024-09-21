@@ -2,7 +2,7 @@ package com.bootcamp.carrito_service.ports.application.http;
 
 import com.bootcamp.carrito_service.domain.api.ICarritoServicePort;
 import com.bootcamp.carrito_service.ports.application.http.controller.CarritoRestController;
-import com.bootcamp.carrito_service.ports.application.http.dto.CarritoRequest;
+import com.bootcamp.carrito_service.ports.application.http.dto.AgregarArticuloACarritoRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class CarritoRestControllerTest {
     @WithMockUser(roles = "USER")
     void testAgregarArticulos_Unauthorized() throws Exception {
         // Arrange
-        CarritoRequest carritoRequest = new CarritoRequest();
+        AgregarArticuloACarritoRequest carritoRequest = new AgregarArticuloACarritoRequest();
         carritoRequest.setArticuloID(1L);
         carritoRequest.setCantidad(5L);
 
