@@ -2,6 +2,8 @@ package com.bootcamp.carrito_service.ports.persistency.mysql.adapter;
 
 import com.bootcamp.carrito_service.domain.spi.IArticuloPersistencePort;
 import com.bootcamp.carrito_service.domain.utils.ArticuloInfo;
+import com.bootcamp.carrito_service.ports.application.http.dto.ArticuloCarritoInfoRequest;
+import com.bootcamp.carrito_service.ports.application.http.dto.ArticuloCarritoInfoResponseWrapper;
 import com.bootcamp.carrito_service.ports.application.http.dto.ArticuloInfoResponse;
 import com.bootcamp.carrito_service.ports.persistency.mysql.repository.IArticuloFeign;
 import lombok.RequiredArgsConstructor;
@@ -25,5 +27,11 @@ public class ArticuloFeignAdapter implements IArticuloPersistencePort {
                         .toList()
         );
         return articuloInfo;
+    }
+
+    @Override
+    public ArticuloCarritoInfoResponseWrapper getArticulosByIds(ArticuloCarritoInfoRequest request) {
+        ArticuloCarritoInfoResponseWrapper response = articuloFeign.getArticulosByIds(request);
+        return response;
     }
 }

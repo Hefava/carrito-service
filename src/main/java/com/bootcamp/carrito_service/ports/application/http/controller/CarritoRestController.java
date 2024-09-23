@@ -3,6 +3,8 @@ package com.bootcamp.carrito_service.ports.application.http.controller;
 import com.bootcamp.carrito_service.domain.api.ICarritoServicePort;
 import com.bootcamp.carrito_service.domain.utils.TokenHolder;
 import com.bootcamp.carrito_service.ports.application.http.dto.AgregarArticuloACarritoRequest;
+import com.bootcamp.carrito_service.ports.application.http.dto.ArticuloCarritoInfoRequest;
+import com.bootcamp.carrito_service.ports.application.http.dto.ArticuloCarritoInfoResponseWrapper;
 import com.bootcamp.carrito_service.ports.application.http.dto.EliminarArticuloCarritoRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,5 +51,22 @@ public class CarritoRestController {
             @RequestBody @Valid @Parameter(description = "Identificadores del carrito y del artículo a eliminar.", required = true) EliminarArticuloCarritoRequest eliminarArticuloCarritoRequest) {
         carritoService.eliminarArticulo(eliminarArticuloCarritoRequest.getCarritoID(), eliminarArticuloCarritoRequest.getArticuloID());
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    @Operation(summary = "Obtener artículos del carrito", description = "Permite obtener los artículos del carrito especificado en la solicitud.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Artículos obtenidos exitosamente del carrito."),
+            @ApiResponse(responseCode = "400", description = "Solicitud incorrecta. Los datos del carrito pueden ser inválidos o incompletos."),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor. Se produjo un problema al procesar la solicitud.")
+    })
+    @GetMapping("/obtener-articulos")
+    public ResponseEntity<ArticuloCarritoInfoResponseWrapper> obtenerArticulos(
+            @RequestHeader("Authorization") String token,
+            @RequestBody ArticuloCarritoInfoRequest request) {
+
+        TokenHolder.setToken(token);
+        ArticuloCarritoInfoResponseWrapper response = carritoService.obtenerArticulosConPrecioTotal(request);
+        TokenHolder.clear();
+        return ResponseEntity.ok(response);
     }
 }
