@@ -10,6 +10,9 @@ public class ArticuloCarritoInfoResponse {
     private int totalPages;
     private long totalCount;
 
+    public ArticuloCarritoInfoResponse() {
+    }
+
     public ArticuloCarritoInfoResponse(double precioTotal, List<ArticuloCarritoInfo> articulos, int page, int pageSize, int totalPages, long totalCount) {
         this.precioTotal = precioTotal;
         this.articulos = articulos;

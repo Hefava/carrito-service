@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static com.bootcamp.carrito_service.domain.utils.CarritoConstants.PRECIO_TOTAL_INICIAL;
+
 @Component
 @RequiredArgsConstructor
 public class ArticuloFeignAdapter implements IArticuloPersistencePort {
@@ -24,12 +26,14 @@ public class ArticuloFeignAdapter implements IArticuloPersistencePort {
         ArticuloInfoResponse response = articuloFeign.getArticuloInfo(articuloID);
 
         ArticuloInfo articuloInfo = new ArticuloInfo();
+        articuloInfo.setArticuloID(response.getArticuloID());
         articuloInfo.setCantidad(response.getCantidad());
         articuloInfo.setCategorias(
                 response.getCategorias().stream()
                         .map(c -> c.getCategoriaID())
                         .toList()
         );
+        articuloInfo.setPrecio(response.getPrecio());
         return articuloInfo;
     }
 
@@ -44,7 +48,7 @@ public class ArticuloFeignAdapter implements IArticuloPersistencePort {
                 .toList();
 
         return new ArticuloCarritoInfoResponse(
-                0.0,
+                PRECIO_TOTAL_INICIAL,
                 articulos,
                 responseWrapper.getPage(),
                 responseWrapper.getPageSize(),

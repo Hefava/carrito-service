@@ -14,4 +14,8 @@ public class CarritoConstants {
     public static final String ELIMINAR_ARTICULO_QUERY = "DELETE FROM articulos_carrito WHERE carrito_id = :carritoID AND articulo_id = :articuloID";
     public static final String PARAM_CARRITO = "carritoID";
     public static final String PARAM_ARTICULO = "articuloID";
+
+    public static final double PRECIO_TOTAL_INICIAL = 0.0;
+    public static final int PRECISION_REDONDEO = 2;
+    public static final long CANTIDAD_INICIAL = 0L;
 }
