@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/carrito/agregar-articulos").hasAnyRole(ROL_CLIENTE)
                         .requestMatchers("/carrito/eliminar-articulo-de-carrito").hasAnyRole(ROL_CLIENTE)
+                        .requestMatchers("/carrito/obtener-articulos").hasAnyRole(ROL_CLIENTE)
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception

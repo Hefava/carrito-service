@@ -17,17 +17,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.bootcamp.carrito_service.domain.utils.ErrorConstants.MESSAGE;
-import static com.bootcamp.carrito_service.domain.utils.ErrorConstants.SERVER_ERROR;
+import static com.bootcamp.carrito_service.domain.utils.ErrorConstants.*;
 
 @ControllerAdvice
 public class CarritoControllerAdvisor {
 
     @ExceptionHandler(StockInsuficienteException.class)
     public ResponseEntity<Map<String, String>> handleStockInsuficienteException(StockInsuficienteException ex) {
-        String mensaje = CarritoExceptionResponse.STOCK_INSUFICIENTE.getMessage() + ex.getFechaAbastecimiento();
+        String mensaje = CarritoExceptionResponse.STOCK_INSUFICIENTE.getMessage()
+                + ARTICULO_ID + ex.getArticuloID() + WHITE_SPACE + ex.getFechaAbastecimiento();
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Collections.singletonMap(MESSAGE, mensaje));
+                .body(Collections.singletonMap("message", mensaje));
     }
 
     @ExceptionHandler(MaximoArticulosPorCategoriaException.class)

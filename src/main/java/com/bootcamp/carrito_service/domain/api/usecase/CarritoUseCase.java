@@ -7,15 +7,18 @@ import com.bootcamp.carrito_service.domain.exception.StockInsuficienteException;
 import com.bootcamp.carrito_service.domain.model.ArticuloCarrito;
 import com.bootcamp.carrito_service.domain.model.Carrito;
 import com.bootcamp.carrito_service.domain.spi.*;
-import com.bootcamp.carrito_service.domain.utils.ArticuloInfo;
-import com.bootcamp.carrito_service.domain.utils.CarritoConstants;
+import com.bootcamp.carrito_service.domain.utils.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import static com.bootcamp.carrito_service.domain.utils.CarritoConstants.CANTIDAD_INICIAL;
 
 public class CarritoUseCase implements ICarritoServicePort {
     private final IArticuloPersistencePort articuloPersistencePort;
@@ -62,21 +65,80 @@ public class CarritoUseCase implements ICarritoServicePort {
         }
     }
 
+    @Override
+    public ArticuloCarritoInfoResponse obtenerArticulosConPrecioTotal(ArticuloRequest request) {
+        Long usuarioID = usuarioPersistencePort.obtenerUsuarioID();
+        Carrito carrito = carritoPersistencePort.obtenerOCrearCarrito(usuarioID);
+
+        List<Long> articuloIds = obtenerArticuloIdsEnCarrito(carrito);
+        request.setArticuloIds(articuloIds);
+
+        ArticuloCarritoInfoResponse articulosInfoResponse = articuloPersistencePort.getArticulosByIds(request);
+        List<ArticuloCarritoInfo> articulosInfo = articulosInfoResponse.getArticulos();
+
+        String fechaAbastecimiento = suministroPersistencePort.getFechaAbastecimiento();
+
+        double precioTotal = calcularPrecioTotal(articuloIds, fechaAbastecimiento);
+
+        BigDecimal precioTotalRedondeado = BigDecimal.valueOf(precioTotal).setScale(CarritoConstants.PRECISION_REDONDEO, RoundingMode.HALF_UP);
+
+        return crearResponseConPrecioTotal(precioTotalRedondeado, articulosInfo, request, articulosInfoResponse);
+    }
+
+    private List<Long> obtenerArticuloIdsEnCarrito(Carrito carrito) {
+        List<ArticuloCarrito> articulosCarrito = articuloCarritoPersistencePort.obtenerArticulosPorCarrito(carrito.getCarritoID());
+        return articulosCarrito.stream()
+                .map(ArticuloCarrito::getArticuloId)
+                .toList();
+    }
+
+    private void validarStock(ArticuloInfo articuloInfo, Long cantidadEnCarrito, String fechaAbastecimiento) {
+        if (articuloInfo.getCantidad() < cantidadEnCarrito) {
+            throw new StockInsuficienteException(articuloInfo.getArticuloID(), fechaAbastecimiento);
+        }
+    }
+
+    private double calcularPrecioTotal(List<Long> articuloIds, String fechaAbastecimiento) {
+        double precioTotal = CarritoConstants.PRECIO_TOTAL_INICIAL;
+
+        for (Long articuloID : articuloIds) {
+            Long cantidadEnCarrito = obtenerCantidadEnCarrito(articuloID);
+            ArticuloInfo articuloInfo = articuloPersistencePort.verificarInfoArticulo(articuloID);
+            double precioPorArticulo = articuloInfo.getPrecio();
+            validarStock(articuloInfo, cantidadEnCarrito, fechaAbastecimiento);
+            precioTotal += precioPorArticulo * cantidadEnCarrito;
+        }
+
+        return precioTotal;
+    }
+
+    private ArticuloCarritoInfoResponse crearResponseConPrecioTotal(BigDecimal precioTotalRedondeado,
+                                                                    List<ArticuloCarritoInfo> articulosInfo, ArticuloRequest request, ArticuloCarritoInfoResponse articulosInfoResponse) {
+
+        return new ArticuloCarritoInfoResponse(
+                precioTotalRedondeado.doubleValue(),
+                articulosInfo,
+                request.getPageable().getPageNumber(),
+                request.getPageable().getPageSize(),
+                articulosInfoResponse.getTotalPages(),
+                articulosInfoResponse.getTotalCount()
+        );
+    }
+
     private ArticuloInfo verificarStockDisponible(Long articuloID, Long cantidad) {
         ArticuloInfo articuloInfo = articuloPersistencePort.verificarInfoArticulo(articuloID);
         String fechaAbastecimiento = suministroPersistencePort.getFechaAbastecimiento();
 
         if (articuloInfo.getCantidad() <= cantidad) {
-            throw new StockInsuficienteException(fechaAbastecimiento);
+            throw new StockInsuficienteException(articuloID, fechaAbastecimiento);
         }
         return articuloInfo;
     }
 
-
     private void actualizarArticuloExistente(ArticuloCarrito articuloExistente, Long cantidad, ArticuloInfo articuloInfo) {
         String fechaAbastecimiento = suministroPersistencePort.getFechaAbastecimiento();
         if (articuloInfo.getCantidad() <= cantidad) {
-            throw new StockInsuficienteException(fechaAbastecimiento);
+            throw new StockInsuficienteException(articuloExistente.getArticuloId(), fechaAbastecimiento);
         }
         articuloExistente.setCantidad(cantidad);
         articuloCarritoPersistencePort.agregarArticuloACarrito(articuloExistente);
@@ -126,5 +188,12 @@ public class CarritoUseCase implements ICarritoServicePort {
         }
 
         return contadorCategorias;
+    }
+
+    private Long obtenerCantidadEnCarrito(Long articuloID) {
+        Long usuarioID = usuarioPersistencePort.obtenerUsuarioID();
+        Carrito carrito = carritoPersistencePort.obtenerOCrearCarrito(usuarioID);
+        ArticuloCarrito articuloCarrito = articuloCarritoPersistencePort.obtenerArticuloEnCarrito(carrito.getCarritoID(), articuloID);
+        return articuloCarrito != null ? articuloCarrito.getCantidad() : CANTIDAD_INICIAL;
     }
 }

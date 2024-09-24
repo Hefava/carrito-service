@@ -1,9 +1,12 @@
 package com.bootcamp.carrito_service.ports.application.http.controller;
 
 import com.bootcamp.carrito_service.domain.api.ICarritoServicePort;
+import com.bootcamp.carrito_service.domain.utils.ArticuloCarritoInfoResponse;
+import com.bootcamp.carrito_service.domain.utils.ArticuloRequest;
 import com.bootcamp.carrito_service.domain.utils.TokenHolder;
-import com.bootcamp.carrito_service.ports.application.http.dto.AgregarArticuloACarritoRequest;
-import com.bootcamp.carrito_service.ports.application.http.dto.EliminarArticuloCarritoRequest;
+import com.bootcamp.carrito_service.ports.application.http.dto.*;
+import com.bootcamp.carrito_service.ports.application.http.mapper.ArticuloRequestMapper;
+import com.bootcamp.carrito_service.ports.application.http.mapper.ArticuloResponseMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 public class CarritoRestController {
 
     private final ICarritoServicePort carritoService;
+    private final ArticuloRequestMapper articuloRequestMapper;
+    private final ArticuloResponseMapper articuloResponseMapper;
 
     @Operation(summary = "Agregar artículos al carrito", description = "Permite agregar artículos al carrito especificado en la solicitud.")
     @ApiResponses(value = {
@@ -49,5 +54,23 @@ public class CarritoRestController {
             @RequestBody @Valid @Parameter(description = "Identificadores del carrito y del artículo a eliminar.", required = true) EliminarArticuloCarritoRequest eliminarArticuloCarritoRequest) {
         carritoService.eliminarArticulo(eliminarArticuloCarritoRequest.getCarritoID(), eliminarArticuloCarritoRequest.getArticuloID());
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    @Operation(summary = "Obtener artículos del carrito", description = "Permite obtener los artículos del carrito especificado en la solicitud.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Artículos obtenidos exitosamente del carrito."),
+            @ApiResponse(responseCode = "400", description = "Solicitud incorrecta. Los datos del carrito pueden ser inválidos o incompletos."),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor. Se produjo un problema al procesar la solicitud.")
+    })
+    @GetMapping("/obtener-articulos")
+    public ResponseEntity<WrapperStock> obtenerArticulos(
+            @RequestHeader("Authorization") @Parameter(required = true) String token,
+            @RequestBody ArticuloCarritoInfoRequest requestDto) {
+        TokenHolder.setToken(token);
+        ArticuloRequest domainRequest = articuloRequestMapper.toDomain(requestDto);
+        ArticuloCarritoInfoResponse domainResponse = carritoService.obtenerArticulosConPrecioTotal(domainRequest);
+        WrapperStock responseDto = articuloResponseMapper.toDto(domainResponse);
+        TokenHolder.clear();
+        return ResponseEntity.ok(responseDto);
     }
 }

@@ -12,8 +12,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ArticuloInfoResponse {
+    private Long articuloID;
     private Long cantidad;
     private List<CategoriaInfoDto> categorias;
+    private Double precio;
 
     @Getter
     @Setter
