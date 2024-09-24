@@ -7,10 +7,7 @@ import com.bootcamp.carrito_service.domain.exception.StockInsuficienteException;
 import com.bootcamp.carrito_service.domain.model.ArticuloCarrito;
 import com.bootcamp.carrito_service.domain.model.Carrito;
 import com.bootcamp.carrito_service.domain.spi.*;
-import com.bootcamp.carrito_service.domain.utils.ArticuloInfo;
-import com.bootcamp.carrito_service.domain.utils.CarritoConstants;
-import com.bootcamp.carrito_service.ports.application.http.dto.ArticuloCarritoInfoRequest;
-import com.bootcamp.carrito_service.ports.application.http.dto.ArticuloCarritoInfoResponseWrapper;
+import com.bootcamp.carrito_service.domain.utils.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -67,7 +64,7 @@ public class CarritoUseCase implements ICarritoServicePort {
     }
 
     @Override
-    public ArticuloCarritoInfoResponseWrapper obtenerArticulosConPrecioTotal(ArticuloCarritoInfoRequest request) {
+    public ArticuloCarritoInfoResponse obtenerArticulosConPrecioTotal(ArticuloRequest request) {
         Long usuarioID = usuarioPersistencePort.obtenerUsuarioID();
         Carrito carrito = carritoPersistencePort.obtenerOCrearCarrito(usuarioID);
 
@@ -78,12 +75,14 @@ public class CarritoUseCase implements ICarritoServicePort {
 
         request.setArticuloIds(articuloIds);
 
-        ArticuloCarritoInfoResponseWrapper response = articuloPersistencePort.getArticulosByIds(request);
+        ArticuloCarritoInfoResponse articulosInfoResponse = articuloPersistencePort.getArticulosByIds(request);
+        List<ArticuloCarritoInfo> articulosInfo = articulosInfoResponse.getArticulos();
+
         String fechaAbastecimiento = suministroPersistencePort.getFechaAbastecimiento();
 
-        double precioTotal = 0;
+        double precioTotal = 0.0;
 
-        for (ArticuloCarritoInfoResponseWrapper.ArticuloCarritoInfoResponse articulo : response.getContent()) {
+        for (ArticuloCarritoInfo articulo : articulosInfo) {
             Long cantidadEnCarrito = obtenerCantidadEnCarrito(articulo.getArticuloID());
             if (articulo.getCantidad() < cantidadEnCarrito) {
                 throw new StockInsuficienteException(fechaAbastecimiento);
@@ -92,9 +91,16 @@ public class CarritoUseCase implements ICarritoServicePort {
             precioTotal += articulo.getPrecio() * cantidadEnCarrito;
         }
 
-        BigDecimal precioTotalRedondeado = new BigDecimal(precioTotal).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal precioTotalRedondeado = BigDecimal.valueOf(precioTotal).setScale(2, RoundingMode.HALF_UP);
 
-        return new ArticuloCarritoInfoResponseWrapper(precioTotalRedondeado.doubleValue(), response.getContent(), response.getPage(), response.getPageSize(), response.getTotalPages(), response.getTotalCount());
+        return new ArticuloCarritoInfoResponse(
+                precioTotalRedondeado.doubleValue(),
+                articulosInfo,
+                request.getPageable().getPageNumber(),
+                request.getPageable().getPageSize(),
+                calcularTotalPages(articulosInfo.size(), request.getPageable().getPageSize()),
+                articulosInfo.size()
+        );
     }
 
     private ArticuloInfo verificarStockDisponible(Long articuloID, Long cantidad) {
@@ -168,5 +174,9 @@ public class CarritoUseCase implements ICarritoServicePort {
         Carrito carrito = carritoPersistencePort.obtenerOCrearCarrito(usuarioID);
         ArticuloCarrito articuloCarrito = articuloCarritoPersistencePort.obtenerArticuloEnCarrito(carrito.getCarritoID(), articuloID);
         return articuloCarrito != null ? articuloCarrito.getCantidad() : 0L;
+    }
+
+    private int calcularTotalPages(int totalItems, int pageSize) {
+        return (int) Math.ceil((double) totalItems / pageSize);
     }
 }

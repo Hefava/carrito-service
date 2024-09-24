@@ -11,8 +11,9 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ArticuloCarritoInfoResponseWrapper {
-    private List<ArticuloCarritoInfoResponse> content;
+public class WrapperStock {
+    private double precioTotal;
+    private List<ArticuloStockResponse> content;
     private int page;
     private int pageSize;
     private int totalPages;
@@ -22,7 +23,7 @@ public class ArticuloCarritoInfoResponseWrapper {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class ArticuloCarritoInfoResponse {
+    public static class ArticuloStockResponse {
         private Long articuloID;
         private String nombre;
         private Long cantidad;

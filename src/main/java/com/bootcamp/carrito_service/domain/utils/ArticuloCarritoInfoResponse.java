@@ -3,83 +3,67 @@ package com.bootcamp.carrito_service.domain.utils;
 import java.util.List;
 
 public class ArticuloCarritoInfoResponse {
-    private Long articuloID;
-    private String nombre;
-    private Long cantidad;
-    private double precio;
-    private String marcaNombre;
-    private List<CategoriaResponse> categorias;
+    private double precioTotal;
+    private List<ArticuloCarritoInfo> articulos;
+    private int page;
+    private int pageSize;
+    private int totalPages;
+    private long totalCount;
 
-    public ArticuloCarritoInfoResponse(Long articuloID, String nombre, Long cantidad, double precio, String marcaNombre, List<CategoriaResponse> categorias) {
-        this.articuloID = articuloID;
-        this.nombre = nombre;
-        this.cantidad = cantidad;
-        this.precio = precio;
-        this.marcaNombre = marcaNombre;
-        this.categorias = categorias;
+    public ArticuloCarritoInfoResponse(double precioTotal, List<ArticuloCarritoInfo> articulos, int page, int pageSize, int totalPages, long totalCount) {
+        this.precioTotal = precioTotal;
+        this.articulos = articulos;
+        this.page = page;
+        this.pageSize = pageSize;
+        this.totalPages = totalPages;
+        this.totalCount = totalCount;
     }
 
-    public Long getArticuloID() {
-        return articuloID;
+    public double getPrecioTotal() {
+        return precioTotal;
     }
 
-    public void setArticuloID(Long articuloID) {
-        this.articuloID = articuloID;
+    public void setPrecioTotal(double precioTotal) {
+        this.precioTotal = precioTotal;
     }
 
-    public String getNombre() {
-        return nombre;
+    public List<ArticuloCarritoInfo> getArticulos() {
+        return articulos;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setArticulos(List<ArticuloCarritoInfo> articulos) {
+        this.articulos = articulos;
     }
 
-    public Long getCantidad() {
-        return cantidad;
+    public int getPage() {
+        return page;
     }
 
-    public void setCantidad(Long cantidad) {
-        this.cantidad = cantidad;
+    public void setPage(int page) {
+        this.page = page;
     }
 
-    public double getPrecio() {
-        return precio;
+    public int getPageSize() {
+        return pageSize;
     }
 
-    public void setPrecio(double precio) {
-        this.precio = precio;
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
-    public String getMarcaNombre() {
-        return marcaNombre;
+    public int getTotalPages() {
+        return totalPages;
     }
 
-    public void setMarcaNombre(String marcaNombre) {
-        this.marcaNombre = marcaNombre;
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
     }
 
-    public List<CategoriaResponse> getCategorias() {
-        return categorias;
+    public long getTotalCount() {
+        return totalCount;
     }
 
-    public void setCategorias(List<CategoriaResponse> categorias) {
-        this.categorias = categorias;
-    }
-
-    public static class CategoriaResponse {
-        private String nombre;
-
-        public CategoriaResponse(String nombre) {
-            this.nombre = nombre;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public void setNombre(String nombre) {
-            this.nombre = nombre;
-        }
+    public void setTotalCount(long totalCount) {
+        this.totalCount = totalCount;
     }
 }
