@@ -78,8 +78,9 @@ public class CarritoUseCase implements ICarritoServicePort {
 
         String fechaAbastecimiento = suministroPersistencePort.getFechaAbastecimiento();
 
-        double precioTotal = calcularPrecioTotal(articuloIds, fechaAbastecimiento);
+        procesarArticulosConStock(articulosInfo, fechaAbastecimiento);
 
+        double precioTotal = calcularPrecioTotal(articuloIds, fechaAbastecimiento);
         BigDecimal precioTotalRedondeado = BigDecimal.valueOf(precioTotal).setScale(CarritoConstants.PRECISION_REDONDEO, RoundingMode.HALF_UP);
 
         return crearResponseConPrecioTotal(precioTotalRedondeado, articulosInfo, request, articulosInfoResponse);
@@ -95,6 +96,26 @@ public class CarritoUseCase implements ICarritoServicePort {
     private void validarStock(ArticuloInfo articuloInfo, Long cantidadEnCarrito, String fechaAbastecimiento) {
         if (articuloInfo.getCantidad() < cantidadEnCarrito) {
             throw new StockInsuficienteException(articuloInfo.getArticuloID(), fechaAbastecimiento);
+        }
+    }
+
+    private String validarStockConMensaje(ArticuloInfo articuloInfo, Long cantidadEnCarrito, String fechaAbastecimiento) {
+        if (articuloInfo.getCantidad() < cantidadEnCarrito) {
+            return "Stock insuficiente. Próximo abastecimiento: " + fechaAbastecimiento;
+        }
+        return "";
+    }
+
+    private void procesarArticulosConStock(List<ArticuloCarritoInfo> articulosInfo, String fechaAbastecimiento) {
+        for (ArticuloCarritoInfo articuloInfo : articulosInfo) {
+            Long articuloID = articuloInfo.getArticuloID();
+            Long cantidadEnCarrito = obtenerCantidadEnCarrito(articuloID);
+
+            articuloInfo.setCantidadEnCarrito(cantidadEnCarrito);
+
+            ArticuloInfo articuloStockInfo = articuloPersistencePort.verificarInfoArticulo(articuloID);
+            String mensajeAbastecimiento = validarStockConMensaje(articuloStockInfo, cantidadEnCarrito, fechaAbastecimiento);
+            articuloInfo.setMensajeAbastecimiento(mensajeAbastecimiento);
         }
     }
 

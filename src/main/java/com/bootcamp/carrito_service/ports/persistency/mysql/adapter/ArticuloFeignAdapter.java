@@ -62,6 +62,8 @@ public class ArticuloFeignAdapter implements IArticuloPersistencePort {
                 dto.getArticuloID(),
                 dto.getNombre(),
                 dto.getCantidad(),
+                null,
+                null,
                 dto.getPrecio(),
                 dto.getMarcaNombre(),
                 dto.getCategorias()

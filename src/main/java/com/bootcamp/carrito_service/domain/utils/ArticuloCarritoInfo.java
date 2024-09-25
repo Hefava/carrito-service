@@ -6,14 +6,18 @@ public class ArticuloCarritoInfo {
     private Long articuloID;
     private String nombre;
     private Long cantidad;
+    private Long cantidadEnCarrito;
+    private String mensajeAbastecimiento;
     private double precio;
     private String marcaNombre;
     private List<String> categorias;
 
-        public ArticuloCarritoInfo(Long articuloID, String nombre, Long cantidad, double precio, String marcaNombre, List<String> categorias) {
+        public ArticuloCarritoInfo(Long articuloID, String nombre, Long cantidad, Long cantidadEnCarrito, String mensajeAbastecimiento,double precio, String marcaNombre, List<String> categorias) {
         this.articuloID = articuloID;
         this.nombre = nombre;
         this.cantidad = cantidad;
+        this.cantidadEnCarrito = cantidadEnCarrito;
+        this.mensajeAbastecimiento = mensajeAbastecimiento;
         this.precio = precio;
         this.marcaNombre = marcaNombre;
         this.categorias = categorias;
@@ -41,6 +45,22 @@ public class ArticuloCarritoInfo {
 
     public void setCantidad(Long cantidad) {
         this.cantidad = cantidad;
+    }
+
+    public Long getCantidadEnCarrito() {
+        return cantidadEnCarrito;
+    }
+
+    public void setCantidadEnCarrito(Long cantidadEnCarrito) {
+        this.cantidadEnCarrito = cantidadEnCarrito;
+    }
+
+    public String getMensajeAbastecimiento() {
+        return mensajeAbastecimiento;
+    }
+
+    public void setMensajeAbastecimiento(String mensajeAbastecimiento) {
+        this.mensajeAbastecimiento = mensajeAbastecimiento;
     }
 
     public double getPrecio() {

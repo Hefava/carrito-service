@@ -27,6 +27,8 @@ public class WrapperStock {
         private Long articuloID;
         private String nombre;
         private Long cantidad;
+        private Long cantidadEnCarrito;
+        private String mensajeAbastecimiento;
         private double precio;
         private String marcaNombre;
         private List<String> categorias;
